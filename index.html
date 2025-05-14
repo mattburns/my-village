@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Village</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: white;
+      text-align: center;
+    }
+    h1 {
+      font-size: 3em;
+      margin-top: 20px;
+    }
+    .house-e {
+      color: blue;
+      font-weight: bold;
+    }
+    .screen {
+      display: none;
+    }
+    .active {
+      display: block;
+    }
+    button {
+      margin: 10px;
+      padding: 15px 25px;
+      font-size: 1.2em;
+      cursor: pointer;
+    }
+    #game-screen {
+      position: relative;
+      margin-top: 20px;
+    }
+    #money {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 1.2em;
+      background: #eee;
+      padding: 10px;
+      border-radius: 5px;
+      z-index: 10;
+    }
+    #shop-button, #back-button {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      margin-left: 10px;
+      font-size: 1.2em;
+      cursor: pointer;
+    }
+    #back-button {
+      right: 120px;
+    }
+    #shop-screen {
+      margin-top: 20px;
+    }
+    #shop-input {
+      padding: 10px;
+      font-size: 1em;
+      width: 60%;
+    }
+    #shop-response {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    #land {
+      margin-top: 80px;
+      width: 100%;
+      height: 500px;
+      background-color: #a4d17d;
+      background-image: repeating-linear-gradient(45deg, #a4d17d, #a4d17d 10px, #b8e994 10px, #b8e994 20px);
+      overflow: hidden;
+      position: relative;
+    }
+    .item {
+      position: absolute;
+      font-size: 2em;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="home-screen" class="screen active">
+    <h1>My Villag<span class="house-e">🏠</span></h1>
+    <button onclick="startGame()">Start</button>
+    <button onclick="resetGame()">Reset</button>
+  </div>
+
+  <div id="game-screen" class="screen">
+    <div id="money">£500</div>
+    <!-- Removed floating Shop and Back buttons -->
+    <div id="land">
+      <!-- Land area (content appears here) -->
+    </div>
+    <div id="game-controls" style="margin-top: 20px;">
+      <button onclick="openShop()">🛍️ Shop</button>
+      <button onclick="resetGame()">Reset</button>
+      <button onclick="goHome()">⬅️ Back</button>
+    </div>
+  </div>
+
+  <div id="shop-screen" class="screen">
+    <h2>🛒 Welcome to the Shop!</h2>
+    <p>You are talking to <strong>Lily</strong>.</p>
+    <div id="shopkeeper">
+      <div style="font-size: 80px;">🧍‍♀️</div>
+      <p><em>"Hi there! I'm Lily. What would you like to buy?"</em></p>
+    </div>
+    <input type="text" id="shop-input" placeholder="Type what you want to buy" />
+    <button onclick="buyItem()">Buy</button>
+    <p id="shop-response"></p>
+    <button onclick="exitShop()">⬅️ Exit Shop</button>
+  </div>
+
+  <script>
+    let money = 500;
+
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.remove('active');
+      });
+      document.getElementById(id).classList.add('active');
+    }
+
+    function startGame() {
+      showScreen('game-screen');
+    }
+
+    function resetGame() {
+      money = 500;
+      document.getElementById('money').textContent = `£${money}`;
+      document.getElementById('land').innerHTML = '';
+      showScreen('home-screen');
+      alert('Game reset!');
+    }
+
+    function goHome() {
+      showScreen('home-screen');
+    }
+
+    function openShop() {
+      showScreen('shop-screen');
+      document.getElementById('shop-response').textContent = '';
+      document.getElementById('shop-input').value = '';
+    }
+
+    function exitShop() {
+      showScreen('game-screen');
+    }
+
+    function buyItem() {
+      const item = document.getElementById('shop-input').value.trim().toLowerCase();
+      if (!item) {
+        document.getElementById('shop-response').textContent = "Please type something to buy.";
+        return;
+      }
+
+      const price = Math.floor(Math.random() * 100) + 50;
+      if (money >= price) {
+        money -= price;
+        document.getElementById('money').textContent = `£${money}`;
+        document.getElementById('shop-response').textContent = `Lily says: "Great choice! Here's your ${item} for £${price}!"`;
+
+        addToLand(item);
+      } else {
+        document.getElementById('shop-response').textContent = `Lily says: "Sorry, you don't have enough money for that!"`;
+      }
+    }
+
+    function addToLand(itemText) {
+      const land = document.getElementById('land');
+
+      // Default to 1 item
+      let quantity = 1;
+
+      // Try to extract a number from the input text
+      const words = itemText.split(' ');
+      for (let word of words) {
+        if (!isNaN(parseInt(word))) {
+          quantity = parseInt(word);
+          break;
+        }
+        const numberWords = {
+          one: 1,
+          two: 2,
+          three: 3,
+          four: 4,
+          five: 5,
+          six: 6,
+          seven: 7,
+          eight: 8,
+          nine: 9,
+          ten: 10
+        };
+        if (numberWords[word]) {
+          quantity = numberWords[word];
+          break;
+        }
+      }
+
+      // Determine the emoji based on item type
+      let emoji = '📦';
+      if (itemText.includes('rabbit')) {
+        emoji = '🐇';
+      } else if (itemText.includes('tree')) {
+        emoji = '🌳';
+      } else if (itemText.includes('house')) {
+        emoji = '🏠';
+      } else if (itemText.includes('cat')) {
+        emoji = '🐈';
+      }
+
+      const spacing = 50;
+      const rect = land.getBoundingClientRect();
+      const startX = (rect.width / 2) - ((quantity - 1) * spacing / 2);
+      const y = rect.height / 2;
+
+      for (let i = 0; i < quantity; i++) {
+        const el = document.createElement('div');
+        el.className = 'item';
+        el.textContent = emoji;
+        el.style.left = `${startX + i * spacing}px`;
+        el.style.top = `${y}px`;
+
+        // Add gentle bouncing animation
+        el.style.transition = 'transform 0.3s';
+        setInterval(() => {
+          el.style.transform = `translateY(${Math.random() * 5}px)`;
+        }, 500 + Math.random() * 1000);
+
+        // Add grow on click
+        el.addEventListener('click', () => {
+          const currentSize = parseFloat(el.style.fontSize) || 2;
+          if (currentSize < 5) {
+            el.style.fontSize = `${currentSize + 0.5}em`;
+          }
+        });
+
+        // Optional: play a sound if an animal (sound code to be added separately)
+        // if (emoji === '🐇' || emoji === '🐈') {
+        //   const audio = new Audio('animal-sound.mp3');
+        //   audio.play();
+        // }
+
+        land.appendChild(el);
+      }
+    }
+  </script>
+</body>
+</html>
